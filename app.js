@@ -27,7 +27,6 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-app.listen(port, (err) => {
-  if (err) console.log("Port error: " + err);
+app.listen(port, () => {
   console.log(`The server is up at https://localhost:${port}`);
 });
