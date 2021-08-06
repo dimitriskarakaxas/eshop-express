@@ -15,7 +15,6 @@ const port = 3000;
 // EJS template engine set up
 app.set("view engine", "ejs");
 app.set("views", "views");
-// / EJS template engine set up
 
 app.use(express.static(path.join(rootDir, "public")));
 
