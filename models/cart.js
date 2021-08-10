@@ -1,3 +1,4 @@
+const { timeStamp } = require("console");
 const fs = require("fs");
 const path = require("path");
 
@@ -33,6 +34,30 @@ module.exports = class Cart {
       cart.totalPrice = cart.totalPrice + +productPrice;
 
       fs.writeFile(cartFile, JSON.stringify(cart), (err) => {
+        if (err) {
+          console.log(err);
+        }
+      });
+    });
+  }
+
+  static deleteProduct(id, prodPrice) {
+    fs.readFile(cartFile, (err, fileContent) => {
+      if (err) {
+        return;
+      }
+
+      const cart = JSON.parse(fileContent);
+      const updatedCart = { ...cart };
+      const product = updatedCart.products.find((prod) => prod.id === id);
+      const productQty = product.qty;
+
+      updatedCart.products = updatedCart.products.filter(
+        (prod) => prod.id !== id
+      );
+      updatedCart.totalPrice -= prodPrice * productQty;
+
+      fs.writeFile(cartFile, JSON.stringify(updatedCart), (err) => {
         if (err) {
           console.log(err);
         }
