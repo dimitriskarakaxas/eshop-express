@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const rootDir = require("../util/path");
-const cart = require("./cart");
+const Cart = require("./cart");
 
 const productsFile = path.join(rootDir, "data", "products.json");
 
@@ -57,7 +57,7 @@ module.exports = class Product {
         if (err) {
           console.log(err);
         }
-        cart.deleteProduct(id, product.price);
+        Cart.deleteProduct(id, product.price);
       });
     });
   }
