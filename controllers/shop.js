@@ -2,9 +2,9 @@ const Product = require("../models/product");
 const Cart = require("../models/cart");
 
 module.exports.getProducts = (req, res, next) => {
-  Product.fetchAll((products) => {
+  Product.fetchAll().then(([rows, fieldData]) => {
     res.render("shop/product-list", {
-      prods: products,
+      prods: rows,
       pageTitle: "All Products",
       path: "/products",
     });
@@ -13,19 +13,24 @@ module.exports.getProducts = (req, res, next) => {
 
 module.exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
-  Product.findById(prodId, (product) => {
-    res.render("shop/product-detail.ejs", {
-      product: product,
-      pageTitle: product.title,
-      path: "/products",
+  Product.findById(prodId)
+    .then(([row]) => {
+      const prod = row[0];
+      res.render("shop/product-detail.ejs", {
+        product: prod,
+        pageTitle: prod.title,
+        path: "/products",
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  });
 };
 
 module.exports.getIndex = (req, res, next) => {
-  Product.fetchAll((products) => {
+  Product.fetchAll().then(([rows, fieldData]) => {
     res.render("shop/index", {
-      prods: products,
+      prods: rows,
       pageTitle: "Shop",
       path: "/",
     });

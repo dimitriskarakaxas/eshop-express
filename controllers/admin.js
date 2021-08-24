@@ -15,8 +15,10 @@ module.exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const desc = req.body.description;
   const product = new Product(null, title, imageUrl, price, desc);
-  product.save();
-  res.redirect("/");
+  product
+    .save()
+    .then(() => res.redirect("/"))
+    .catch((err) => console.log(err));
 };
 
 module.exports.getEditProduct = (req, res, next) => {
