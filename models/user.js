@@ -19,13 +19,14 @@ class User {
       return cp._id === product._id;
     });
 
+    let newQuantity = 1;
     if (cartProductIndex) {
       const newQuantity = cart.items[cartProductIndex].quantity + 1;
     }
 
-    const updatedCart = {
-      items: [{ productId: new ObjectId(product._id), quantity: 1 }],
-    };
+    // const updatedCart = {
+    //   items: [{ productId: new ObjectId(product._id), quantity: 1 }],
+    // };
     const db = getDb();
     return db
       .collection("users")
