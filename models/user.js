@@ -15,25 +15,37 @@ class User {
   }
 
   addToCart(product) {
+    console.log(product);
+    console.log(this.cart.items);
     const cartProductIndex = this.cart.items.findIndex((cp) => {
-      return cp._id === product._id;
+      return cp.productId.toString() === product._id.toString();
     });
 
+    const updatedCartItems = [...this.cart.items];
     let newQuantity = 1;
-    if (cartProductIndex) {
-      const newQuantity = cart.items[cartProductIndex].quantity + 1;
+    if (cartProductIndex >= 0) {
+      const newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+      updatedCartItems[cartProductIndex].quantity = newQuantity;
+    } else {
+      updatedCartItems.push({
+        productId: new ObjectId(product._id),
+        quantity: newQuantity,
+      });
     }
 
-    // const updatedCart = {
-    //   items: [{ productId: new ObjectId(product._id), quantity: 1 }],
-    // };
+    const updatedCart = {
+      items: updatedCartItems,
+    };
+
     const db = getDb();
     return db
       .collection("users")
       .updateOne(
         { _id: new ObjectId(this._id) },
         { $set: { cart: updatedCart } }
-      );
+      )
+      .then((result) => result)
+      .catch((err) => console.log(err));
   }
 
   static findById(userId) {
