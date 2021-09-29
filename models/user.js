@@ -1,5 +1,6 @@
 const { ObjectId } = require("mongodb");
 const { getDb } = require("../util/database");
+const Product = require("./product");
 
 class User {
   constructor(username, email, cart, id) {
@@ -15,8 +16,6 @@ class User {
   }
 
   addToCart(product) {
-    console.log(product);
-    console.log(this.cart.items);
     const cartProductIndex = this.cart.items.findIndex((cp) => {
       return cp.productId.toString() === product._id.toString();
     });
@@ -45,6 +44,44 @@ class User {
         { $set: { cart: updatedCart } }
       )
       .then((result) => result)
+      .catch((err) => console.log(err));
+  }
+
+  removeFromCart(prodId) {
+    const updatedCartItems = this.cart.items.filter(
+      (product) => product.productId.toString() !== prodId.toString()
+    );
+
+    const db = getDb();
+    return db
+      .collection("users")
+      .updateOne(
+        { _id: new ObjectId(this._id) },
+        { $set: { cart: updatedCartItems } }
+      )
+      .then((result) => {
+        return result;
+      })
+      .catch((err) => console.log(err));
+  }
+
+  getCart() {
+    const db = getDb();
+    const productIds = this.cart.items.map((prod) => prod.productId);
+    return db
+      .collection("products")
+      .find({ _id: { $in: productIds } })
+      .toArray()
+      .then((products) => {
+        return products.map((product) => {
+          return {
+            ...product,
+            quantity: this.cart.items.find((p) => {
+              return p.productId.toString() === product._id.toString();
+            }).quantity,
+          };
+        });
+      })
       .catch((err) => console.log(err));
   }
 
