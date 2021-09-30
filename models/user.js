@@ -75,12 +75,39 @@ class User {
 
   getCart() {
     const db = getDb();
-    const productIds = this.cart.items.map((prod) => prod.productId);
+    const productIds = this.cart.items.map(
+      (prod) => new ObjectId(prod.productId)
+    );
+
     return db
       .collection("products")
       .find({ _id: { $in: productIds } })
       .toArray()
       .then((products) => {
+        if (products.length !== productIds.length) {
+          const productIdsNotCart = productIds.filter((productId) => {
+            for (const product of products) {
+              if (productId.toString() === product._id.toString()) return false;
+            }
+            return true;
+          });
+          console.log(productIdsNotCart);
+          const newCart = {
+            items: this.cart.items.filter((item) => {
+              for (let i = 0; i < productIdsNotCart.length; i++) {
+                if (
+                  item.productId.toString() === productIdsNotCart[i].toString()
+                )
+                  return false;
+              }
+              return true;
+            }),
+          };
+          db.collection("users").updateOne(
+            { _id: this._id },
+            { $set: { cart: newCart } }
+          );
+        }
         return products.map((product) => {
           return {
             ...product,
