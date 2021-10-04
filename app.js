@@ -1,9 +1,9 @@
 const path = require("path");
 
 const express = require("express");
+const mongoose = require("mongoose");
 
 const errorController = require("./controllers/error");
-const { mongoConnect } = require("./util/database");
 
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
@@ -20,9 +20,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  User.findById("6154670fa9bf551d741d1667")
+  User.findById("615acf2c969517cf1f11dbbf")
     .then((user) => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       next();
     })
     .catch((err) => console.log(err));
@@ -33,8 +33,22 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(() => {
-  app.listen(port, () => {
-    console.log(`The server is up at http://localhost:${port}`);
+mongoose
+  .connect(
+    "mongodb+srv://dimitris:123123qweqwe@cluster0.9vwun.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+  )
+  .then(() => {
+    User.findOne({ name: "Dimitris Karakaxas" }).then((user) => {
+      if (!user) {
+        const user = new User({
+          name: "Dimitris Karakaxas",
+          email: "karakaxasdimitrios@yahoo.com",
+          cart: { items: [] },
+        });
+        user.save();
+      }
+    });
+    app.listen(port, () => {
+      console.log(`The server is up at http://localhost${port}`);
+    });
   });
-});
