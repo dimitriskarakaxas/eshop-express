@@ -21,9 +21,4 @@ const orderSchema = new Schema({
   },
 });
 
-orderSchema.methods.clearCart = function () {
-  this.cart.items = [];
-  return this.save();
-};
-
 module.exports = mongoose.model("Order", orderSchema);
