@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
-const { update } = require("./product");
+const { Product } = require("./product");
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-  name: {
+  email: {
     type: String,
     required: true,
   },
-  email: {
+  password: {
     type: String,
     required: true,
   },

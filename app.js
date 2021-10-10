@@ -57,17 +57,7 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 mongoose.connect(MONGODB_URI).then(() => {
-  User.findOne({ name: "Dimitris Karakaxas" }).then((user) => {
-    if (!user) {
-      const user = new User({
-        name: "Dimitris Karakaxas",
-        email: "karakaxasdimitrios@yahoo.com",
-        cart: { items: [] },
-      });
-      user.save();
-    }
-  });
   app.listen(port, () => {
-    console.log(`The server is up at http://localhost${port}`);
+    console.log(`The server is up at http://localhost:${port}`);
   });
 });
