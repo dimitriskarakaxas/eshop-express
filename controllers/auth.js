@@ -1,9 +1,12 @@
+const { randomBytes } = require("crypto");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
-require("dotenv").config();
+const dotenv = require("dotenv");
 
 const User = require("../models/user");
+
+dotenv.config();
 
 const transporter = nodemailer.createTransport(
   sendgridTransport({
@@ -113,6 +116,68 @@ exports.postSignup = (req, res, next) => {
           });
         })
         .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+};
+
+exports.getResetPassword = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
+  res.render("auth/password-reset", {
+    path: "/reset",
+    pageTitle: "Reset Password",
+    errorMessage: message,
+  });
+};
+
+exports.postRestPassword = (req, res, next) => {
+  // Check for email existance in database
+  User.findOne({ email: req.body.email })
+    .then((user) => {
+      // User doesn't exist
+      if (!user) {
+        req.flash("error", "There is no user with this email address.");
+        return res.redirect("/reset");
+      }
+      // User exists in database
+      // Generate unique strong random token with crypt nodejs module
+      randomBytes(32, (err, buffer) => {
+        if (err) {
+          req.flash(
+            "error",
+            "Something went wrong:( Try again in a few minutes"
+          );
+          return res.redirect("/reset");
+        }
+
+        user.resetToken = buffer.toString("hex");
+        user.resetTokenExpiration = Date.now() + 900000; // This token will be outdated in 15min
+
+        // Save token to the user requested for password reset
+        user
+          .save()
+          .then((user) => {
+            res.redirect("/");
+            // Send email with reset link to the user
+            transporter.sendMail({
+              to: req.body.email,
+              from: "mitsoskarakaxas@gmail.com",
+              subject: "Reset Password",
+              html: `
+                <h1>Reset your Node-Eshop password</h1>
+                <p>We heard that you lost Node-Eshop password. Sorry about that!</p>
+                <p>But don't worry! You can use the following link to reset your password</p>
+                <a style="padding: 10px; background: lightgreen; text-decoration: none; font-size: 21px;" href="http://localhost:3000/reset/${user.resetToken}">Reset Password</a>
+              `,
+            });
+          })
+          .catch((err) => console.log(err));
+      });
     })
     .catch((err) => console.log(err));
 };

@@ -6,6 +6,7 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const csurf = require("csurf");
 const flash = require("connect-flash");
+const dotenv = require("dotenv");
 
 const errorController = require("./controllers/error");
 
@@ -14,11 +15,12 @@ const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 const User = require("./models/user");
 
-const MONGODB_URI =
-  "mongodb+srv://dimitris:123123qweqwe@cluster0.9vwun.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+dotenv.config();
+
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: "sessions",
