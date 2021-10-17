@@ -5,6 +5,7 @@ const sendgridTransport = require("nodemailer-sendgrid-transport");
 const dotenv = require("dotenv");
 
 const User = require("../models/user");
+const { reset } = require("nodemon");
 
 dotenv.config();
 
@@ -178,6 +179,60 @@ exports.postRestPassword = (req, res, next) => {
           })
           .catch((err) => console.log(err));
       });
+    })
+    .catch((err) => console.log(err));
+};
+
+exports.getNewPassword = (req, res, next) => {
+  const token = req.params.token;
+
+  // Check to whom user :token exists to.
+  User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
+    .then((user) => {
+      let message = req.flash("error");
+      if (message.length) {
+        message = message[0];
+      } else {
+        message = null;
+      }
+
+      res.render("auth/new-password", {
+        path: "/reset",
+        pageTitle: "Reset Password",
+        errorMessage: message,
+        userId: user._id.toString(),
+        resetToken: token,
+      });
+    })
+    .catch((err) => console.log(err));
+};
+
+exports.postNewPassword = (req, res, next) => {
+  const newPassword = req.body.password;
+  const userId = req.body.userId;
+  const resetToken = req.body.resetToken;
+  let resetUser;
+
+  User.findOne({
+    _id: req.body.userId,
+    resetToken: resetToken,
+    resetTokenExpiration: { $gt: Date.now() },
+  })
+    .then((user) => {
+      resetUser = user;
+      return bcrypt.genSalt(12);
+    })
+    .then((salt) => {
+      return bcrypt.hash(newPassword, salt);
+    })
+    .then((hashedPassword) => {
+      resetUser.password = hashedPassword;
+      resetUser.resetToken = undefined;
+      resetUser.resetTokenExpiration = undefined;
+      return resetUser.save();
+    })
+    .then((result) => {
+      res.redirect("/login");
     })
     .catch((err) => console.log(err));
 };
