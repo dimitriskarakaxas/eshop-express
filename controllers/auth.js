@@ -150,7 +150,7 @@ exports.postRestPassword = (req, res, next) => {
         if (err) {
           req.flash(
             "error",
-            "Something went wrong:( Try again in a few minutes"
+            "Something went wrong:( Try again in a few minutes."
           );
           return res.redirect("/reset");
         }
