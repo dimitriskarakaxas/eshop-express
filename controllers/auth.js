@@ -2,10 +2,10 @@ const { randomBytes } = require("crypto");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
+const { validationResult } = require("express-validator");
 const dotenv = require("dotenv");
 
 const User = require("../models/user");
-const { reset } = require("nodemon");
 
 dotenv.config();
 
@@ -50,6 +50,16 @@ exports.getSignup = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    return res.status(422).render("auth/login", {
+      pageTitle: "Signup",
+      path: "/login",
+      errorMessage: validationErrors.array()[0].msg,
+    });
+  }
+
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
@@ -88,35 +98,38 @@ exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
-  User.findOne({ email: email })
-    .then((userDoc) => {
-      if (userDoc) {
-        req.flash("error", "There is already a user with this email.");
-        return res.redirect("/signup");
-      }
-      return bcrypt
-        .genSalt(12)
-        .then((salt) => {
-          return bcrypt.hash(password, salt);
-        })
-        .then((hashedPassword) => {
-          const user = new User({
-            email: email,
-            password: hashedPassword,
-            cart: { items: [] },
-          });
-          return user.save();
-        })
-        .then((result) => {
-          res.redirect("/login");
-          return transporter.sendMail({
-            to: email,
-            from: "mitsoskarakaxas@gmail.com",
-            subject: "Signup Succesfully",
-            html: "<h1>You succesfully signed up!</h1>",
-          });
-        })
-        .catch((err) => console.log(err));
+  const validationErrors = validationResult(req);
+
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors.array());
+    return res.status(422).render("auth/signup", {
+      pageTitle: "Signup",
+      path: "/signup",
+      errorMessage: validationErrors.array()[0].msg,
+    });
+  }
+
+  bcrypt
+    .genSalt(12)
+    .then((salt) => {
+      return bcrypt.hash(password, salt);
+    })
+    .then((hashedPassword) => {
+      const user = new User({
+        email: email,
+        password: hashedPassword,
+        cart: { items: [] },
+      });
+      return user.save();
+    })
+    .then((result) => {
+      res.redirect("/login");
+      return transporter.sendMail({
+        to: email,
+        from: "mitsoskarakaxas@gmail.com",
+        subject: "Signup Succesfully",
+        html: "<h1>You succesfully signed up!</h1>",
+      });
     })
     .catch((err) => console.log(err));
 };
