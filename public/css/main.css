@@ -41,9 +41,10 @@ form {
 }
 
 .main-header__nav {
+  display: none;
   height: 100%;
   width: 100%;
-  display: flex;
+  /* display: flex; */
   align-items: center;
   justify-content: space-between;
 }
@@ -239,6 +240,26 @@ form {
   border-color: red;
   background: rgb(255, 215, 215);
   color: red;
+}
+
+.pagination {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.pagination a {
+  text-decoration: none;
+  color: #00695c;
+  padding: 0.5rem;
+  border: 1px solid #00695c;
+  margin: 0 1rem;
+}
+
+.pagination a:hover,
+.paginarion a:active,
+.pagination a.active {
+  background: #00695c;
+  color: #fff;
 }
 
 @media (min-width: 768px) {
